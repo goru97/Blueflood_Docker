@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 
+while :
+do
+	nc -z $CASSANDRA_PORT_9042_TCP_ADDR 9160 > /dev/null
+	if [ $? == 0 ]
+		then
+		break
+	else
+		echo "Waiting for Cassandra..."
+	fi
+	sleep 2	
+done
+
+echo "Connecting to Cassandra at $CASSANDRA_PORT_9042_TCP_ADDR"
+
 echo "CASSANDRA_HOSTS=$CASSANDRA_PORT_9042_TCP_ADDR:9160" >> blueflood.conf
+
+cqlsh CASSANDRA_PORT_9042_TCP_ADDR -f blueflood.cdl
 
 /usr/bin/java \
         -Dblueflood.config=file:./blueflood.conf \

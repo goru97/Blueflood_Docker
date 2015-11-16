@@ -1,0 +1,14 @@
+blueflood:
+  build: .
+  links:
+    - cassandra0
+
+cassandra0:
+  image: cassandra:2.1
+
+cassandran:
+  image: cassandra:2.1
+  links:
+    - cassandra0:seed
+  environment:
+    - CASSANDRA_SEEDS=seed

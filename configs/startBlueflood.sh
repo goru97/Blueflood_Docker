@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
+######## Connecting to Cassandra and loading Blueflood's schema #######
 while :
 do
-	nc -z $CASSANDRA_PORT_9042_TCP_ADDR 9160 > /dev/null
+	nc -z $CASSANDRA_PORT_9160_TCP_ADDR 9160 > /dev/null
 	if [ $? == 0 ]
 		then
+                echo "Connected to Cassandra at $CASSANDRA_PORT_9160_TCP_ADDR"
 		break
 	else
 		echo "Waiting for Cassandra..."
@@ -12,11 +14,25 @@ do
 	sleep 2	
 done
 
-echo "Connecting to Cassandra at $CASSANDRA_PORT_9042_TCP_ADDR"
+echo "CASSANDRA_HOSTS=$CASSANDRA_PORT_9160_TCP_ADDR:9160" >> blueflood.conf
 
-echo "CASSANDRA_HOSTS=$CASSANDRA_PORT_9042_TCP_ADDR:9160" >> blueflood.conf
+cqlsh $CASSANDRA_PORT_9042_TCP_ADDR -f blueflood.cdl
 
-cqlsh CASSANDRA_PORT_9042_TCP_ADDR -f blueflood.cdl
+######## Connecting to Elasticsearch #######
+while :
+do
+        nc -z $ELASTICSEARCH_PORT_9300_TCP_ADDR 9300 > /dev/null
+        if [ $? == 0 ]
+                then
+                echo "Connected to Elasticsearch at $ELASTICSEARCH_PORT_9300_TCP_ADDR"
+                break
+        else
+                echo "Waiting for ElasticSearch..."
+        fi
+        sleep 2 
+done
+
+echo "ELASTICSEARCH_HOSTS=$ELASTICSEARCH_PORT_9300_TCP_ADDR:9300" >> blueflood.conf
 
 /usr/bin/java \
         -Dblueflood.config=file:./blueflood.conf \
